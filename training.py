@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class Trainer:
-    def __init__(self, model, optim, device, train, val) -> None:
+    def __init__(self, model, optim, device, train, val, lossfn=None) -> None:
         
         self.optim = optim
         self.device = device
@@ -10,8 +10,12 @@ class Trainer:
         self.val = val
         self.dtype = torch.float32
         self.model = model.to(device=self.device)  # move the model parameters to CPU/GPU
+        if lossfn is not None:
+            self.lossfn = lossfn
+        else:
+            self.lossfn = nn.MSELoss()
         
-    def train_model(self, epochs=1, print_every=100):
+    def train_model(self, epochs=1, print_every=500):
         """
         Train a model on CIFAR-10 using the PyTorch Module API.
         
@@ -22,15 +26,15 @@ class Trainer:
         
         Returns: Nothing, but prints model accuracies during training.
         """
-        lossfn = nn.MSELoss()
         for e in range(epochs):
+            print('EPOCH: ',e)
             for t, (x,) in enumerate(self.train):
                 self.model.train()  # put model to training mode
                 x = x.to(device=self.device, dtype=self.dtype)  # move to device, e.g. GPU
                 y = x
 
                 scores = self.model(x)
-                loss = lossfn(scores,y)
+                loss = self.lossfn(scores,y)
 
                 # Zero out all of the gradients for the variables which the optimizer
                 # will update.
@@ -59,7 +63,7 @@ class Trainer:
                 x = x.to(device=self.device, dtype=self.dtype)  # move to device, e.g. GPU
                 y = x
                 scores = model(x)
-                loss += lossfn(scores,y)
+                loss += self.lossfn(scores,y)
                 num_samples += 1
                 
             acc = float(loss) / num_samples
