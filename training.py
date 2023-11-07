@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import torch.functional as F
 
 class Trainer:
     def __init__(self, model, optim, device, train, val, lossfn=None, kl_factor=0, kl_rate=1,kl_max=1) -> None:
@@ -30,6 +31,9 @@ class Trainer:
         
         Returns: Nothing, but prints model accuracies during training.
         """
+        kl_losses = []
+        mse_losses = []
+        total_losses = []
         for e in range(epochs):
             print('EPOCH: ',e)
             kl_factor=self.kl_factor
@@ -40,9 +44,12 @@ class Trainer:
 
                 scores, kl = self.model(x)
                 loss = self.lossfn(scores,y)
+                mse_losses.append(loss.detach().cpu().numpy())
                 loss += kl * kl_factor
+                kl_losses.append((kl * kl_factor).detach().cpu().numpy())
+                total_losses.append(loss.detach().cpu().numpy())
 
-                kl_factor = np.minimum(self.kl_max,kl_factor*(1+self.kl_rate))
+                kl_factor = np.minimum(self.kl_max,kl_factor*(self.kl_rate))
 
                 # Zero out all of the gradients for the variables which the optimizer
                 # will update.
@@ -59,8 +66,10 @@ class Trainer:
                 if t % print_every == 0:
                     print('Iteration %d, loss = %.4f' % (t, loss.item()))
                     print('KL Factor: %.6f' % (kl_factor))
+                    print('KL %.4f' % kl)
                     self.check_accuracy(self.val, self.model)
                     print()
+        return mse_losses, kl_losses, total_losses
 
     def check_accuracy(self, loader, model):
         lossfn = nn.MSELoss()  

@@ -12,8 +12,8 @@ class Encoder(nn.Module):
         self.conv5 = nn.Conv2d(32,32,3)
         self.conv6 = nn.Conv2d(32,3,(3,2),stride=3)
         self.lin1 = nn.Linear(2625,1024)
-        self.lin_mu = nn.Linear(1024,64)
-        self.lin_var = nn.Linear(1024,64)
+        self.lin_mu = nn.Linear(1024,20)
+        self.lin_var = nn.Linear(1024,20)
         self.relu = nn.LeakyReLU()
         self.flatten = nn.Flatten(1)
         self.dropout = nn.Dropout()
@@ -43,7 +43,7 @@ class Decoder(nn.Module):
         self.conv2 = nn.ConvTranspose2d(32,32,3)
         self.conv1 = nn.ConvTranspose2d(3,32,(3,2),stride=3)
         self.lin2 = nn.Linear(1024,2625)
-        self.lin1 = nn.Linear(64,1024)
+        self.lin1 = nn.Linear(20,1024)
         self.relu = nn.LeakyReLU()
         self.unflatten = nn.Unflatten(1,(3,35,25))
         self.dropout = nn.Dropout()
@@ -70,6 +70,14 @@ class AutoEncoder(nn.Module):
         x_mu, x_var = self.encoder(x)
         x = torch.randn_like(x_var)
         x = x * x_var + x_mu
-        kl_div = torch.mean(x_mu**2 + x_var**2 - torch.log(x_var**2) - 0.5)
+        x_mu_shift = torch.roll(x_mu,1,0)
+        x_var_shift = torch.roll(x_var,1,0)
+        kl_div = torch.mean(0.5*torch.log(x_var_shift**2/x_var**2)+(x_var**2+(x_mu-x_mu_shift)**2)/(2.0*x_var_shift**2)-0.5)
+        # kl_div = torch.mean((x_mu**2 + x_var**2 - torch.log(x_var**2))/2)
         x=self.decoder(x)
         return x, kl_div
+    
+    def test(self, x):
+        x_mu, x_var = self.encoder(x)
+        x=self.decoder(x_mu)
+        return x
