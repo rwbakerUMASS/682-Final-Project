@@ -31,9 +31,6 @@ class LFWDataLoader:
             train5[i] = ndimage.median_filter(train5[i], 3)
         train = np.concatenate((train, train1, train2, train3, train4, train5), axis=0)
         train_true = np.concatenate((train_copy,train_copy))
-        idx = np.random.permutation(train.shape[0])
-        train = train[idx]
-        train_true = train_true[idx]
         print(train.shape)
         print(val.shape)
         print(test.shape)
@@ -41,10 +38,10 @@ class LFWDataLoader:
         train = torch.Tensor(train)
         train_true = torch.Tensor(train_true)
         self.train_dataset = TensorDataset(train,train_true)
-        self.train_dataloader = DataLoader(self.train_dataset, batch_size=batch_size)
+        self.train_dataloader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True)
         val = torch.Tensor(val)
         self.val_dataset = TensorDataset(val,val)
-        self.val_dataloader = DataLoader(self.val_dataset, batch_size=batch_size)
+        self.val_dataloader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=True)
         test = torch.Tensor(test)
         self.test_dataset = TensorDataset(test,test)
-        self.test_dataloader = DataLoader(self.test_dataset, batch_size=batch_size)
+        self.test_dataloader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=True)
