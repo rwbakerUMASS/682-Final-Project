@@ -37,10 +37,10 @@ class Trainer:
         for e in range(epochs):
             print('EPOCH: ',e)
             kl_factor=self.kl_factor
-            for t, (x,) in enumerate(self.train):
+            for t, (x,y) in enumerate(self.train):
                 self.model.train()  # put model to training mode
                 x = x.to(device=self.device, dtype=self.dtype)  # move to device, e.g. GPU
-                y = x
+                y = y.to(device=self.device, dtype=self.dtype) 
 
                 scores, kl = self.model(x)
                 loss = self.lossfn(scores,y)
@@ -77,9 +77,9 @@ class Trainer:
         num_samples = 0
         model.eval()  # set model to evaluation mode
         with torch.no_grad():
-            for x, in loader:
+            for x, y in loader:
                 x = x.to(device=self.device, dtype=self.dtype)  # move to device, e.g. GPU
-                y = x
+                y = y.to(device=self.device, dtype=self.dtype) 
                 scores,_ = model(x)
                 loss += self.lossfn(scores,y)
                 num_samples += 1

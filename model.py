@@ -72,8 +72,8 @@ class AutoEncoder(nn.Module):
         x = x * x_var + x_mu
         x_mu_shift = torch.roll(x_mu,1,0)
         x_var_shift = torch.roll(x_var,1,0)
-        kl_div = torch.mean(0.5*torch.log(x_var_shift**2/x_var**2)+(x_var**2+(x_mu-x_mu_shift)**2)/(2.0*x_var_shift**2)-0.5)
-        # kl_div = torch.mean((x_mu**2 + x_var**2 - torch.log(x_var**2))/2)
+        # kl_div = torch.mean(0.5*torch.log(x_var_shift**2/x_var**2)+(x_var**2+(x_mu-x_mu_shift)**2)/(2.0*x_var_shift**2)-0.5)
+        kl_div = torch.mean((x_mu**2 + x_var**2 - torch.log(x_var**2))/2)
         x=self.decoder(x)
         return x, kl_div
     

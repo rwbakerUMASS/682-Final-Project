@@ -21,7 +21,7 @@ class LFWDataLoader:
         train, val, test = np.split(data, [int(train_size*len(data)), int((train_size+val_size)*(len(data)))])
         train_copy = train.copy()
         train1, train2, train3, train4, train5 = np.split(train_copy, [int(.2*len(train)), int(.4*(len(train))), int(.6*len(train)), int(.8*len(train))])
-
+        
         for i in range(len(train1)):
             for j in range(3):
                 train1[i][j] = ndimage.rotate(train1[i][j], 45, reshape=False, cval=1)
@@ -29,20 +29,22 @@ class LFWDataLoader:
                 train3[i][j] = ndimage.shift(train4[i][j], -30, order=0, cval=1)
                 train4[i][j] = ndimage.shift(train4[i][j], 30, order=0, cval=1)
             train5[i] = ndimage.median_filter(train5[i], 3)
-        print(train.shape)
         train = np.concatenate((train, train1, train2, train3, train4, train5), axis=0)
-        np.random.shuffle(train)
-
+        train_true = np.concatenate((train_copy,train_copy))
+        idx = np.random.permutation(train.shape[0])
+        train = train[idx]
+        train_true = train_true[idx]
         print(train.shape)
         print(val.shape)
         print(test.shape)
 
         train = torch.Tensor(train)
-        self.train_dataset = TensorDataset(train)
+        train_true = torch.Tensor(train_true)
+        self.train_dataset = TensorDataset(train,train_true)
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=batch_size)
         val = torch.Tensor(val)
-        self.val_dataset = TensorDataset(val)
+        self.val_dataset = TensorDataset(val,val)
         self.val_dataloader = DataLoader(self.val_dataset, batch_size=batch_size)
         test = torch.Tensor(test)
-        self.test_dataset = TensorDataset(test)
+        self.test_dataset = TensorDataset(test,test)
         self.test_dataloader = DataLoader(self.test_dataset, batch_size=batch_size)
