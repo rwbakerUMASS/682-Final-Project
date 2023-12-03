@@ -2,9 +2,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.functional as F
+from loss import PerceptualLoss
 
 class Trainer:
-    def __init__(self, model, optim, device, train, val, lossfn=None, kl_factor=0, kl_rate=1,kl_max=1) -> None:
+    def __init__(self, model, optim, device, train, val, lossfn=None, kl_factor=0, kl_rate=1,kl_max=1,ploss_wt=0) -> None:
         
         self.optim = optim
         self.device = device
@@ -15,6 +16,8 @@ class Trainer:
         self.kl_factor = kl_factor
         self.kl_rate = kl_rate
         self.kl_max = kl_max
+        self.ploss = PerceptualLoss()
+        self.ploss_wt = ploss_wt
         if lossfn is not None:
             self.lossfn = lossfn
         else:
@@ -44,6 +47,9 @@ class Trainer:
 
                 scores, kl = self.model(x)
                 loss = self.lossfn(scores,y)
+                loss += self.ploss_wt *  self.ploss(scores,y)
+
+                # loss = nn.functional.cross_entropy(scores,y, reduction='mean')
                 mse_losses.append(loss.detach().cpu().numpy())
                 loss += kl * kl_factor
                 kl_losses.append((kl * kl_factor).detach().cpu().numpy())
@@ -81,7 +87,7 @@ class Trainer:
                 x = x.to(device=self.device, dtype=self.dtype)  # move to device, e.g. GPU
                 y = y.to(device=self.device, dtype=self.dtype) 
                 scores,_ = model(x)
-                loss += self.lossfn(scores,y)
+                loss += lossfn(scores,y)
                 num_samples += 1
                 
             acc = float(loss) / num_samples

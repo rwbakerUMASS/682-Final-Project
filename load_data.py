@@ -29,9 +29,10 @@ class LFWDataLoader:
                 train3[i][j] = ndimage.shift(train4[i][j], -30, order=0, cval=1)
                 train4[i][j] = ndimage.shift(train4[i][j], 30, order=0, cval=1)
             train5[i] = ndimage.median_filter(train5[i], 3)
+        train_true = np.concatenate((train,train))
         train = np.concatenate((train, train1, train2, train3, train4, train5), axis=0)
-        train_true = np.concatenate((train_copy,train_copy))
         print(train.shape)
+        print(train_true.shape)
         print(val.shape)
         print(test.shape)
 
