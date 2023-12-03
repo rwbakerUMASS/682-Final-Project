@@ -21,7 +21,7 @@ class Trainer:
         if lossfn is not None:
             self.lossfn = lossfn
         else:
-            self.lossfn = nn.MSELoss()
+            self.lossfn = nn.MSELoss(reduction='sum')
         
     def train_model(self, epochs=1, print_every=500):
         """
@@ -47,7 +47,8 @@ class Trainer:
 
                 scores, kl = self.model(x)
                 loss = self.lossfn(scores,y)
-                loss += self.ploss_wt *  self.ploss(scores,y)
+                if self.ploss_wt > 0:
+                    loss += self.ploss_wt *  self.ploss(scores,y)
 
                 # loss = nn.functional.cross_entropy(scores,y, reduction='mean')
                 mse_losses.append(loss.detach().cpu().numpy())
