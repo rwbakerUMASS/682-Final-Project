@@ -5,7 +5,7 @@ import torch.functional as F
 from loss import PerceptualLoss
 
 class Trainer:
-    def __init__(self, model, optim, device, train, val, lossfn=None, kl_factor=0, kl_rate=1,kl_max=1,ploss_wt=0) -> None:
+    def __init__(self, model, optim, device, train, val, lossfn=None, kl_factor=1, kl_rate=1,kl_max=1,ploss_wt=0) -> None:
         
         self.optim = optim
         self.device = device
@@ -35,7 +35,7 @@ class Trainer:
         Returns: Nothing, but prints model accuracies during training.
         """
         kl_losses = []
-        mse_losses = []
+        recon_losses = []
         total_losses = []
         for e in range(epochs):
             print('EPOCH: ',e)
@@ -46,13 +46,13 @@ class Trainer:
                 y = y.to(device=self.device, dtype=self.dtype) 
 
                 scores, kl = self.model(x)
-                loss = self.lossfn(scores,y)
+                recon_loss = self.lossfn(scores,y)
+
                 if self.ploss_wt > 0:
                     loss += self.ploss_wt *  self.ploss(scores,y)
 
-                # loss = nn.functional.cross_entropy(scores,y, reduction='mean')
-                mse_losses.append(loss.detach().cpu().numpy())
-                loss += kl * kl_factor
+                recon_losses.append(recon_loss.detach().cpu().numpy())
+                loss = recon_loss + kl * kl_factor
                 kl_losses.append((kl * kl_factor).detach().cpu().numpy())
                 total_losses.append(loss.detach().cpu().numpy())
 
@@ -72,14 +72,15 @@ class Trainer:
 
                 if t % print_every == 0:
                     print('Iteration %d, loss = %.4f' % (t, loss.item()))
-                    print('KL Factor: %.6f' % (kl_factor))
-                    print('KL %.4f' % kl)
+                    print('KL DIV: %.4f' % kl)
+                    print('Recon Loss: %.4f' % recon_loss)
+                    print()
                     self.check_accuracy(self.val, self.model)
                     print()
-        return mse_losses, kl_losses, total_losses
+        return recon_losses, kl_losses, total_losses
 
     def check_accuracy(self, loader, model):
-        lossfn = nn.MSELoss()  
+        lossfn = nn.BCELoss(reduction='sum')  
         loss = 0
         num_samples = 0
         model.eval()  # set model to evaluation mode
@@ -92,4 +93,4 @@ class Trainer:
                 num_samples += 1
                 
             acc = float(loss) / num_samples
-            print('Avg Loss on Val: ' + str(acc))
+            print('Avg Recon Loss on Val: ' + str(acc))

@@ -33,17 +33,14 @@ class LFWDataLoader:
         train_transform = T.Compose([
             T.ToPILImage(),
             T.Resize((64,64)),
-            T.RandomVerticalFlip(0.2),
-            T.RandomVerticalFlip(0.2),
             T.RandomApply([
-                T.RandomRotation([45,90])
-            ],0.2),
-            T.RandomApply([
-                T.RandomAffine(degrees = 0, translate = (0.2, 0))
-            ],0.2),
-            T.RandomApply([
-                T.RandomAffine(degrees = 0, translate = (0, 0.2))
-            ],0.2),
+                T.RandomVerticalFlip(0.5),
+                T.RandomHorizontalFlip(0.5),
+                T.RandomApply([
+                    T.RandomRotation(90)
+                ],0.5),
+                T.RandomAffine(degrees = 0, translate = (0.25, 0.25))
+            ],0.5),
             T.ToTensor()
         ])
 
@@ -69,6 +66,10 @@ class LFWDataLoader:
         # print(train_true.shape)
         # print(val.shape)
         # print(test.shape)
+        
+        train_vanilla_dataset = LFWDataSet(train,transform,transform)
+        self.train_vanilla_dataloader = DataLoader(train_vanilla_dataset, batch_size=batch_size, shuffle=True)
+
         train_dataset = LFWDataSet(train,train_transform,transform)
         self.train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         
