@@ -1,0 +1,39 @@
+PARAMETERS:  36396971
+
+EPOCH:  0
+Iteration 0, loss = 203871.7344
+KL DIV: 0.0711
+Recon Loss: 203871.6562
+
+Avg Recon Loss on Val: 200515.44642857142
+
+EPOCH:  1
+Iteration 0, loss = 185858.4062
+KL DIV: 469.3151
+Recon Loss: 185389.0938
+
+Avg Recon Loss on Val: 182236.92857142858
+
+EPOCH:  2
+Iteration 0, loss = 182847.6250
+KL DIV: 636.2136
+Recon Loss: 182211.4062
+
+Avg Recon Loss on Val: 180237.32142857142
+
+EPOCH:  3
+Iteration 0, loss = 186753.0156
+KL DIV: 631.9246
+Recon Loss: 186121.0938
+
+Avg Recon Loss on Val: 179364.375
+
+EPOCH:  4
+Iteration 0, loss = 183976.3906
+KL DIV: 687.4269
+Recon Loss: 183288.9688
+
+Avg Recon Loss on Val: 178928.42857142858
+
+Final:
+Avg Recon Loss on Val: 178276.4642857143
