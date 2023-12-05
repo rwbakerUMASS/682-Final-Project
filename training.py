@@ -38,6 +38,8 @@ class Trainer:
         recon_losses = []
         total_losses = []
         for e in range(epochs):
+            if e == 75:
+                torch.save(self.model,'{}.model'.format(e))
             print('EPOCH: ',e)
             kl_factor=self.kl_factor
             for t, (x,y) in enumerate(self.train):
@@ -74,7 +76,6 @@ class Trainer:
                     print('Iteration %d, loss = %.4f' % (t, loss.item()))
                     print('KL DIV: %.4f' % kl)
                     print('Recon Loss: %.4f' % recon_loss)
-                    print()
                     self.check_accuracy(self.val, self.model)
                     print()
         return recon_losses, kl_losses, total_losses
