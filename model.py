@@ -139,9 +139,12 @@ class AutoEncoder(nn.Module):
         sample = mu + (eps * std)
         return sample
     
-    def forward(self,x):
+    def forward(self,x, eval=False):
         x_mu, x_var = self.encoder(x)
-        x = self.reparameterize(x_mu, x_var)
+        if eval:
+            x = x_mu
+        else:
+            x = self.reparameterize(x_mu, x_var)
 
         # x_mu_shift = torch.roll(x_mu,1,0)
         # x_var_shift = torch.roll(x_var,1,0)

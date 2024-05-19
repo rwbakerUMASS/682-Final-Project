@@ -38,8 +38,8 @@ class Trainer:
         recon_losses = []
         total_losses = []
         for e in range(epochs):
-            if e == 75:
-                torch.save(self.model,'{}.model'.format(e))
+            if e % 100 == 0:
+                torch.save(self.model,'./overnight/transform_{}.model'.format(e))
             print('EPOCH: ',e)
             kl_factor=self.kl_factor
             for t, (x,y) in enumerate(self.train):
